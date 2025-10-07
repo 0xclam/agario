@@ -5,6 +5,7 @@ const express = require('express');
 const app = express();
 const http = require('http').Server(app);
 const io = require('socket.io')(http);
+require('dotenv').config();
 const SAT = require('sat');
 
 const gameLogic = require('./game-logic');
@@ -19,6 +20,7 @@ let map = new mapUtils.Map(config);
 
 let sockets = {};
 let spectators = [];
+let spectatorPositions = {};
 const INIT_MASS_LOG = util.mathLog(config.defaultPlayerMass, config.slowBase);
 
 let leaderboard = [];
@@ -27,6 +29,30 @@ let leaderboardChanged = false;
 const Vector = SAT.Vector;
 
 app.use(express.static(__dirname + '/../client'));
+app.use(express.json());
+
+// Contract address config (in-memory for now)
+let CONTRACT_ADDRESS = process.env.CONTRACT_ADDRESS || '0x0000000000000000000000000000000000000000';
+const ADMIN_KEY = process.env.ADMIN_KEY || '';
+
+app.get('/api/contract', (req, res) => {
+    res.json({ contract: CONTRACT_ADDRESS });
+});
+
+app.post('/api/contract', (req, res) => {
+    const key = req.headers['x-admin-key'] || req.body.adminKey;
+    const next = (req.body && req.body.contract) ? String(req.body.contract) : '';
+    if (!ADMIN_KEY || key !== ADMIN_KEY) {
+        return res.status(403).json({ error: 'Forbidden' });
+    }
+    if (!/^0x[a-fA-F0-9]{40}$/.test(next)) {
+        return res.status(400).json({ error: 'Invalid address' });
+    }
+    CONTRACT_ADDRESS = next;
+    // Broadcast to connected clients to update their UI if needed
+    io.emit('contractUpdated', { contract: CONTRACT_ADDRESS });
+    res.json({ contract: CONTRACT_ADDRESS });
+});
 
 io.on('connection', function (socket) {
     let type = socket.handshake.query.type;
@@ -202,7 +228,18 @@ const addSpectator = (socket) => {
     socket.on('gotit', function () {
         sockets[socket.id] = socket;
         spectators.push(socket.id);
+        // assign center camera position for this spectator
+        spectatorPositions[socket.id] = {
+            x: Math.floor(config.gameWidth / 2),
+            y: Math.floor(config.gameHeight / 2)
+        };
         io.emit('playerJoin', { name: '' });
+    });
+
+    socket.on('disconnect', function () {
+        const index = spectators.indexOf(socket.id);
+        if (index > -1) spectators.splice(index, 1);
+        delete spectatorPositions[socket.id];
     });
 
     socket.emit("welcome", {}, {
@@ -328,9 +365,10 @@ const sendLeaderboard = (socket) => {
     });
 }
 const updateSpectator = (socketID) => {
+    const pos = spectatorPositions[socketID] || { x: config.gameWidth / 2, y: config.gameHeight / 2 };
     let playerData = {
-        x: config.gameWidth / 2,
-        y: config.gameHeight / 2,
+        x: pos.x,
+        y: pos.y,
         cells: [],
         massTotal: 0,
         hue: 100,

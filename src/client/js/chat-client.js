@@ -29,8 +29,11 @@ class ChatClient {
             self.checkLatency();
         });
 
-        this.registerCommand('dark', 'Toggle dark mode.', function () {
-            self.toggleDarkMode();
+        this.registerCommand('dark', 'Enable dark mode.', function () {
+            self.setDarkMode();
+        });
+        this.registerCommand('light', 'Enable light mode.', function () {
+            self.setLightMode();
         });
 
         this.registerCommand('border', 'Toggle visibility of border.', function () {
@@ -161,21 +164,18 @@ class ChatClient {
         this.socket.emit('pingcheck');
     }
 
-    toggleDarkMode() {
-        var LIGHT = '#f2fbff',
-            DARK = '#181818';
-        var LINELIGHT = '#000000',
-            LINEDARK = '#ffffff';
+    setDarkMode() {
+        var DARK = '#181818', LINEDARK = '#ffffff';
+        global.backgroundColor = DARK;
+        global.lineColor = LINEDARK;
+        this.addSystemLine('Dark mode enabled.');
+    }
 
-        if (global.backgroundColor === LIGHT) {
-            global.backgroundColor = DARK;
-            global.lineColor = LINEDARK;
-            this.addSystemLine('Dark mode enabled.');
-        } else {
-            global.backgroundColor = LIGHT;
-            global.lineColor = LINELIGHT;
-            this.addSystemLine('Dark mode disabled.');
-        }
+    setLightMode() {
+        var LIGHT = '#f2fbff', LINELIGHT = '#000000';
+        global.backgroundColor = LIGHT;
+        global.lineColor = LINELIGHT;
+        this.addSystemLine('Light mode enabled.');
     }
 
     toggleBorder() {

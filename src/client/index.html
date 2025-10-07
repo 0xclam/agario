@@ -3,9 +3,13 @@
 <head>
     <!-- Meta Properties -->
     <meta charset="UTF-8">
-    <title>Open Agar</title>
+    <title>琼脂.io!</title>
+    <link rel="icon" href="img/favicon.ico" type="image/x-icon">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no">
     <!-- CSS -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@700;800&family=Luckiest+Guy&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/main.css" />
     <!-- Audio -->
     <audio id="split_cell" src="audio/split.mp3"></audio>
@@ -14,6 +18,7 @@
 <body>
     <div id="gameAreaWrapper">
         <div id="status"><span class="title">Leaderboard</span></div>
+        <div id="contractBar"><a id="contractLink" href="#" title="Click to copy">0x0000000000000000000000000000000000000000</a></div>
         <div class="chatbox" id="chatbox">
             <ul id="chatList" class="chat-list"></ul>
             <input id="chatInput" type="text" class="chat-input" placeholder="Chat here..." maxlength="35" />
@@ -26,12 +31,39 @@
     </div>
     <div id="startMenuWrapper">
         <div id="startMenu">
-            <p>Open Agar</p>
+            <div class="title-wrapper">
+                <div class="explosion">
+                    <div class="burst burst-1"></div>
+                    <div class="burst burst-2"></div>
+                    <div class="burst burst-3"></div>
+                </div>
+                <h1 class="brand tilt">琼脂.io!</h1>
+            </div>
             <input type="text" tabindex="0" autofocus placeholder="Enter your name here" id="playerNameInput" maxlength="25" />
             <b class="input-error">Nick must be alphanumeric characters only!</b>
             <br />
+            <div id="avatarPicker">
+                <h3>Choose your avatar</h3>
+                <div class="avatar-options">
+                    <label class="avatar-option">
+                        <input type="radio" name="skin" value="cn" />
+                        <img src="img/cn.png" alt="cn" />
+                    </label>
+                    <label class="avatar-option">
+                        <input type="radio" name="skin" value="cz" />
+                        <img src="img/cz.jpg" alt="cz" />
+                    </label>
+                    <label class="avatar-option">
+                        <input type="radio" name="skin" value="sbf" />
+                        <img src="img/sbf.png" alt="sbf" />
+                    </label>
+                    <label class="avatar-option none">
+                        <input type="radio" name="skin" value="" checked />
+                        <span>None</span>
+                    </label>
+                </div>
+            </div>
             <a onclick="document.getElementById('spawn_cell').play();"><button id="startButton">Play</button></a>
-            <button id="spectateButton">Spectate</button>
             <button id="settingsButton">Settings</button>
             <br />
             <div id="settings">
@@ -60,5 +92,42 @@
     <!-- JS -->
     <script src="//code.jquery.com/jquery-2.2.0.min.js"></script>
     <script src="js/app.js"></script>
+    <script>
+    (function(){
+        function setupCopy(){
+            var link = document.getElementById('contractLink');
+            if(!link) return;
+            link.addEventListener('click', function(e){
+                e.preventDefault();
+                var text = link.textContent.trim();
+                var bar = document.getElementById('contractBar');
+                function success(){
+                    if(bar){
+                        bar.classList.add('copied');
+                        setTimeout(function(){ bar.classList.remove('copied'); }, 600);
+                    }
+                }
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    navigator.clipboard.writeText(text).then(success).catch(fallback);
+                } else {
+                    fallback();
+                }
+                function fallback(){
+                    var range = document.createRange();
+                    range.selectNode(link);
+                    var sel = window.getSelection();
+                    sel.removeAllRanges();
+                    sel.addRange(range);
+                    try { document.execCommand('copy'); } catch (e) {}
+                    sel.removeAllRanges();
+                    success();
+                }
+            });
+        }
+        if(document.readyState === 'loading'){
+            document.addEventListener('DOMContentLoaded', setupCopy);
+        } else { setupCopy(); }
+    })();
+    </script>
 </body>
 </html>

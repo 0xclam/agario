@@ -56,6 +56,42 @@ div {
     text-align: center;
 }
 
+#contractBar {
+    position: absolute;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.4);
+    color: #FFF;
+    padding: 10px 14px;
+    border-radius: 6px;
+    font-size: 16.1px;
+    font-weight: bold;
+    text-align: center;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+}
+
+#contractBar a {
+    color: #FFF;
+    text-decoration: none;
+    transition: color 200ms ease, transform 200ms ease, box-shadow 200ms ease;
+}
+
+#contractBar a:hover {
+    color: #8ef58e;
+    text-shadow: 0 0 6px rgba(46, 204, 113, 0.8);
+}
+
+#contractBar.copied {
+    animation: glow 600ms ease;
+}
+
+@keyframes glow {
+    0% { box-shadow: 0 0 0 rgba(46, 204, 113, 0); }
+    50% { box-shadow: 0 0 16px rgba(46, 204, 113, 0.8); }
+    100% { box-shadow: 0 0 0 rgba(46, 204, 113, 0); }
+}
+
 #status .title {
     font-size: 25px;
 }
@@ -88,6 +124,7 @@ div {
 .chatbox .chat-list li {
     padding: 2px;
     margin: 3px;
+    color: #FFF;
 }
 
 .chatbox .chat-list li.me b {
@@ -99,7 +136,7 @@ div {
 }
 
 .chatbox .chat-list li.system {
-    color: #9b59b6;
+    color: #FFF;
     font-style: italic;
 }
 
@@ -127,7 +164,7 @@ div {
     border-radius: 5px;
     -moz-border-radius: 5px;
     -webkit-border-radius: 5px;
-    background-color: white;
+    background-color: rgba(255,255,255,0.75);
     box-sizing: border-box;
 }
 
@@ -136,6 +173,81 @@ div {
     text-align: center;
     font-size: x-large;
     font-weight: bold;
+}
+
+.title-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 12px;
+    height: 100px;
+}
+
+.brand {
+    margin: 0;
+    position: relative;
+    font-family: 'Luckiest Guy', 'Baloo 2', cursive, sans-serif;
+    font-size: 48px;
+    color: #fffb;
+    letter-spacing: 1px;
+    text-shadow: 0 4px 0 #222, 0 6px 12px rgba(0,0,0,0.5);
+    animation: brand-pop 1s ease-out both;
+}
+
+.tilt { transform: rotate(-7deg); }
+
+@keyframes brand-pop {
+    0%   { transform: scale(0.6) rotate(-20deg); opacity: 0; }
+    60%  { transform: scale(1.15) rotate(-10deg); opacity: 1; }
+    100% { transform: scale(1) rotate(-7deg); }
+}
+
+.explosion {
+    position: absolute;
+    width: 160px;
+    height: 160px;
+    border-radius: 50%;
+    filter: drop-shadow(0 6px 10px rgba(0,0,0,0.4));
+    animation: spin 6s linear infinite;
+}
+
+.burst {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    transform: rotate(0deg);
+}
+
+.burst-1 {
+    background: radial-gradient(circle at 50% 50%, #ffd54f 0%, #ffb300 45%, transparent 46%);
+    clip-path: polygon(
+      50% 0%, 60% 30%, 95% 25%, 70% 45%, 100% 60%, 68% 60%, 80% 95%, 50% 70%, 20% 95%, 32% 60%, 0% 60%, 30% 45%, 5% 25%, 40% 30%
+    );
+    opacity: 0.9;
+}
+
+.burst-2 {
+    background: radial-gradient(circle at 50% 50%, #fff176 0%, #ffd54f 40%, transparent 41%);
+    clip-path: polygon(
+      50% 5%, 62% 28%, 96% 32%, 70% 50%, 98% 66%, 66% 66%, 78% 94%, 50% 72%, 22% 94%, 34% 66%, 2% 66%, 30% 50%, 4% 32%, 38% 28%
+    );
+    filter: blur(1px);
+    opacity: 0.7;
+}
+
+.burst-3 {
+    background: radial-gradient(circle at 50% 50%, #fff9c4 0%, #fff176 35%, transparent 36%);
+    clip-path: polygon(
+      50% 10%, 64% 26%, 94% 36%, 70% 52%, 96% 68%, 66% 68%, 74% 92%, 50% 74%, 26% 92%, 34% 68%, 4% 68%, 30% 52%, 6% 36%, 36% 26%
+    );
+    filter: blur(2px);
+    opacity: 0.6;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(360deg); }
 }
 
 #playerNameInput {
@@ -157,33 +269,35 @@ div {
     box-shadow: 0 0 3px 1px #DDDDDD;
 }
 
-#startButton, #spectateButton {
+#startButton, #settingsButton {
     position: relative;
     margin: auto;
     margin-top: 10px;
     width: 100%;
     height: 40px;
     box-sizing: border-box;
-    font-size: large;
-    color: white;
+    font-family: 'Luckiest Guy', 'Baloo 2', cursive, sans-serif;
+    font-size: 22px;
+    color: #222;
     text-align: center;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
-    background: #2ecc71;
+    letter-spacing: 1px;
+    text-shadow: 0 1px 0 rgba(255,255,255,0.6);
+    background: linear-gradient(180deg, #fff176, #ffd54f);
     border: 0;
-    border-bottom: 2px solid #28be68;
+    border-bottom: 3px solid #f1b400;
     cursor: pointer;
-    -webkit-box-shadow: inset 0 -2px #28be68;
-    box-shadow: inset 0 -2px #28be68;
+    -webkit-box-shadow: inset 0 -2px rgba(0,0,0,0.05);
+    box-shadow: inset 0 -2px rgba(0,0,0,0.05), 0 4px 10px rgba(0,0,0,0.15);
     border-radius: 5px;
     -moz-border-radius: 5px;
     -webkit-border-radius: 5px;
     margin-bottom: 10px;
 }
 
-#spectateButton:active, #spectateButton:hover,
-#startButton:active, #startButton:hover {
+#startButton:active, #startButton:hover,
+#settingsButton:active, #settingsButton:hover {
     top: 1px;
-    background: #55D88B;
+    background: linear-gradient(180deg, #ffee58, #ffca28);
     outline: none;
     -webkit-box-shadow: none;
     box-shadow: none;
@@ -242,6 +356,55 @@ div {
     margin: 10px;
     padding: 10px;
     margin-top: 0;
+}
+
+#avatarPicker h3 {
+    margin: 10px 0 6px 0;
+}
+
+.avatar-options {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.avatar-option {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    cursor: pointer;
+    user-select: none;
+}
+
+.avatar-option input[type="radio"] {
+    display: none;
+}
+
+.avatar-option img {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+}
+
+.avatar-option span {
+    display: inline-block;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: #ddd;
+    color: #333;
+    line-height: 48px;
+    text-align: center;
+    border: 2px solid transparent;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+}
+
+.avatar-option input[type="radio"]:checked + img,
+.avatar-option input[type="radio"]:checked + span {
+    border-color: #2ecc71;
 }
 
 #startMenu .input-error {

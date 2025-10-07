@@ -74,18 +74,53 @@ const drawCellWithLines = (cell, borders, graph) => {
     graph.stroke();
 }
 
+const imageCache = {};
+
+const loadSkinImage = (key) => {
+    if (!key) return null;
+    if (imageCache[key]) return imageCache[key];
+    const img = new Image();
+    // map keys to assets in client/img
+    if (key === 'cn') img.src = 'img/cn.png';
+    else if (key === 'cz') img.src = 'img/cz.jpg';
+    else if (key === 'sbf') img.src = 'img/sbf.webp';
+    else return null;
+    imageCache[key] = img;
+    return img;
+}
+
 const drawCells = (cells, playerConfig, toggleMassState, borders, graph) => {
     for (let cell of cells) {
-        // Draw the cell itself
-        graph.fillStyle = cell.color;
-        graph.strokeStyle = cell.borderColor;
-        graph.lineWidth = 6;
-        if (cellTouchingBorders(cell, borders)) {
-            // Asssemble the cell from lines
-            drawCellWithLines(cell, borders, graph);
+        // Draw the cell itself (image skin if present and loaded)
+        const img = loadSkinImage(cell.skin);
+        if (img && img.complete) {
+            graph.save();
+            graph.beginPath();
+            graph.arc(cell.x, cell.y, cell.radius, 0, FULL_ANGLE);
+            graph.closePath();
+            graph.clip();
+            // draw image centered and scaled to cover circle
+            const diameter = cell.radius * 2;
+            graph.drawImage(img, cell.x - cell.radius, cell.y - cell.radius, diameter, diameter);
+            graph.restore();
+            // draw border ring
+            graph.strokeStyle = cell.borderColor;
+            graph.lineWidth = 6;
+            graph.beginPath();
+            graph.arc(cell.x, cell.y, cell.radius, 0, FULL_ANGLE);
+            graph.closePath();
+            graph.stroke();
         } else {
-            // Border corrections are not needed, the cell can be drawn as a circle
-            drawRoundObject(cell, cell.radius, graph);
+            graph.fillStyle = cell.color;
+            graph.strokeStyle = cell.borderColor;
+            graph.lineWidth = 6;
+            if (cellTouchingBorders(cell, borders)) {
+                // Asssemble the cell from lines
+                drawCellWithLines(cell, borders, graph);
+            } else {
+                // Border corrections are not needed, the cell can be drawn as a circle
+                drawRoundObject(cell, cell.radius, graph);
+            }
         }
 
         // Draw the name of the player

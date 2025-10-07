@@ -49,6 +49,7 @@ exports.Map = class {
                     cells: player.cells,
                     massTotal: Math.round(player.massTotal),
                     hue: player.hue,
+                    skin: player.skin,
                     id: player.id,
                     name: player.name
                 };

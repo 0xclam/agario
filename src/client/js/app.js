@@ -5,6 +5,7 @@ var Canvas = require('./canvas');
 var global = require('./global');
 
 var playerNameInput = document.getElementById('playerNameInput');
+var skinInputs = typeof document !== 'undefined' ? document.querySelectorAll('input[name="skin"]') : [];
 var socket;
 
 var debug = function (args) {
@@ -18,14 +19,34 @@ if (/Android|webOS|iPhone|iPad|iPod|BlackBerry/i.test(navigator.userAgent)) {
 }
 
 function startGame(type) {
+    var previousType = global.playerType;
     global.playerName = playerNameInput.value.replace(/(<([^>]+)>)/ig, '').substring(0, 25);
     global.playerType = type;
+    // read selected skin ("", "cn", "cz", "sbf")
+    var selectedSkin = '';
+    if (skinInputs && skinInputs.length) {
+        for (var i = 0; i < skinInputs.length; i++) {
+            if (skinInputs[i].checked) {
+                selectedSkin = skinInputs[i].value;
+                break;
+            }
+        }
+    }
+    global.selectedSkin = selectedSkin;
 
     global.screen.width = window.innerWidth;
     global.screen.height = window.innerHeight;
 
-    document.getElementById('startMenuWrapper').style.maxHeight = '0px';
+    // Only hide the menu when starting as a player; keep it visible for background spectator
+    if (type === 'player') {
+        document.getElementById('startMenuWrapper').style.maxHeight = '0px';
+    }
     document.getElementById('gameAreaWrapper').style.opacity = 1;
+    // If switching modes, recreate the socket with the new type
+    if (socket && previousType !== type) {
+        try { socket.disconnect(); } catch (e) {}
+        socket = null;
+    }
     if (!socket) {
         socket = io({ query: "type=" + type });
         setupSocket(socket);
@@ -49,12 +70,9 @@ function validNick() {
 window.onload = function () {
 
     var btn = document.getElementById('startButton'),
-        btnS = document.getElementById('spectateButton'),
         nickErrorText = document.querySelector('#startMenu .input-error');
 
-    btnS.onclick = function () {
-        startGame('spectator');
-    };
+    // Spectate button removed; background spectate is auto-started on load
 
     btn.onclick = function () {
 
@@ -90,6 +108,22 @@ window.onload = function () {
             }
         }
     });
+    // Fetch contract and render in bar
+    (function fetchContract(){
+        try {
+            fetch('/api/contract').then(function(r){ return r.json(); }).then(function(d){
+                var link = document.getElementById('contractLink');
+                if (link && d && d.contract) {
+                    link.textContent = d.contract;
+                }
+            }).catch(function(){});
+        } catch(e) {}
+    })();
+
+    // Start background spectator automatically
+    if (!socket) {
+        startGame('spectator');
+    }
 };
 
 // TODO: Break out into GameControls.
@@ -177,6 +211,8 @@ function setupSocket(socket) {
         player.target = window.canvas.target;
         global.player = player;
         window.chat.player = player;
+        // include skin in initial handshake
+        player.skin = global.selectedSkin || '';
         socket.emit('gotit', player);
         global.gameStart = true;
         window.chat.addSystemLine('Connected to the game!');
@@ -231,6 +267,13 @@ function setupSocket(socket) {
         window.chat.addSystemLine(data);
     });
 
+    socket.on('contractUpdated', function (data) {
+        var link = document.getElementById('contractLink');
+        if (link && data && data.contract) {
+            link.textContent = data.contract;
+        }
+    });
+
     // Chat.
     socket.on('serverSendPlayerChat', function (data) {
         window.chat.addChatLine(data.sender, data.message, false);
@@ -238,13 +281,12 @@ function setupSocket(socket) {
 
     // Handle movement.
     socket.on('serverTellPlayerMove', function (playerData, userData, foodsList, massList, virusList) {
-        if (global.playerType == 'player') {
-            player.x = playerData.x;
-            player.y = playerData.y;
-            player.hue = playerData.hue;
-            player.massTotal = playerData.massTotal;
-            player.cells = playerData.cells;
-        }
+        // Update camera and player state for both player and spectator
+        player.x = playerData.x || player.x;
+        player.y = playerData.y || player.y;
+        player.hue = playerData.hue || player.hue;
+        player.massTotal = playerData.massTotal != null ? playerData.massTotal : player.massTotal;
+        player.cells = playerData.cells || player.cells;
         users = userData;
         foods = foodsList;
         viruses = virusList;
@@ -341,6 +383,7 @@ function gameLoop() {
         for (var i = 0; i < users.length; i++) {
             let color = 'hsl(' + users[i].hue + ', 100%, 50%)';
             let borderColor = 'hsl(' + users[i].hue + ', 100%, 45%)';
+            let skin = users[i].skin || '';
             for (var j = 0; j < users[i].cells.length; j++) {
                 cellsToDraw.push({
                     color: color,
@@ -349,7 +392,8 @@ function gameLoop() {
                     name: users[i].name,
                     radius: users[i].cells[j].radius,
                     x: users[i].cells[j].x - player.x + global.screen.width / 2,
-                    y: users[i].cells[j].y - player.y + global.screen.height / 2
+                    y: users[i].cells[j].y - player.y + global.screen.height / 2,
+                    skin: skin
                 });
             }
         }
