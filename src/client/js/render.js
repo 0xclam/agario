@@ -83,7 +83,7 @@ const loadSkinImage = (key) => {
     // map keys to assets in client/img
     if (key === 'cn') img.src = 'img/cn.png';
     else if (key === 'cz') img.src = 'img/cz.jpg';
-    else if (key === 'sbf') img.src = 'img/sbf.webp';
+    else if (key === 'sbf') img.src = 'img/sbf.png';
     else return null;
     imageCache[key] = img;
     return img;
